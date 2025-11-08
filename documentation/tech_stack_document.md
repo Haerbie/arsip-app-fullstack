@@ -1,90 +1,116 @@
 # Tech Stack Document
 
-This document explains the key technologies chosen for the **codeguide-starter** project. It’s written in everyday language so anyone—technical or not—can understand why each tool was picked and how it supports the application.
+This document explains, in everyday language, the technology choices made for the Local Archive Web Application. It covers the tools used on the front end, back end, infrastructure, integrations, security, and performance, and ends with a summary of how everything works together to meet your goals.
 
 ## 1. Frontend Technologies
-The frontend is everything the user sees and interacts with. For this project, we’ve used:
+
+These are the building blocks for everything that users see and interact with in their web browser:
 
 - **Next.js (App Router)**
-  - A React framework that makes page routing, server-side rendering, and API routes very simple.
-  - Enhances user experience by pre-rendering pages on the server or at build time, leading to faster initial load.
-- **React 18**
-  - The underlying library for building user interfaces with reusable components.
-  - Provides a smooth, interactive experience thanks to its virtual DOM and modern hooks.
+  - Provides a clean, file-based way to organize pages and API routes.
+  - Lets us server-render pages for faster loading and better search engine performance.
+- **React**
+  - Powers the dynamic parts of the user interface (forms, tables, dashboards).
+  - Makes it easy to break the UI into reusable components.
+- **Tailwind CSS**
+  - A utility-first styling tool that speeds up design work.
+  - Simplifies implementing responsive layouts and a Dark Mode theme via CSS variables.
+- **shadcn/ui**
+  - A set of pre-built, accessible UI components (data tables, forms, cards).
+  - Ensures visual consistency and reduces manual design effort.
 - **TypeScript**
-  - A superset of JavaScript that adds types (labels for data).
-  - Helps catch errors early during development and makes the code easier to maintain.
-- **CSS (globals.css & theme.css)**
-  - **globals.css** applies base styles (fonts, colors, resets) across the entire app.
-  - **dashboard/theme.css** defines the look and feel specific to the dashboard area.
-  - This separation keeps styles organized and avoids accidental style conflicts.
+  - Adds type safety to all frontend code, catching mistakes before they cause bugs.
+  - Works hand-in-hand with React and Next.js for a smoother development experience.
 
-By combining these tools, we have a clear structure (Next.js folders for pages and layouts), safer code (TypeScript), and flexible styling with vanilla CSS.
+These tools combine to create a fast, responsive, and easy-to-use interface for managing archive records, with minimal custom styling work and built-in theme support.
 
 ## 2. Backend Technologies
-The backend handles data, user accounts, and the logic behind the scenes. Our choices here are:
+
+These tools power the server side of the application, handling data storage, business logic, and security checks:
 
 - **Next.js API Routes**
-  - Allows us to write server-side code (`route.ts` files) alongside our frontend in the same project.
-  - Runs on Node.js, so we can handle requests like sign-up, sign-in, and data fetching in one place.
-- **Node.js Runtime**
-  - The JavaScript environment on the server that executes our API routes.
-- **bcrypt** (npm package)
-  - A library for hashing passwords securely before storing them.
-  - Ensures that even if someone got access to our data, raw passwords aren’t visible.
-- **(Optional) NextAuth.js or JWT**
-  - While this starter kit shows a custom authentication flow, it can easily integrate services like NextAuth.js for email-based login or JWT (JSON Web Tokens) for stateless sessions.
+  - Host server-side functions right alongside the frontend.
+  - Handle all Create/Read/Update/Delete (CRUD) operations for archive data.
+  - Include role checks at the API level to prevent unauthorized access.
+- **Better Auth Library**
+  - Provides user authentication (sign up, sign in) and session management.
+  - Is customized to support three roles: `superadmin`, `operator`, and `user`.
+  - Implements a “pending” state for new registrations, which only a superadmin can approve.
+- **MySQL Database**
+  - Stores all archive records in seven core tables (e.g., Arsip Unit, Berkas Arsip, Kategori, Sub Kategori, Kode Klasifikasi, Unit Pengolah, Manajemen Pengguna).
+  - Chosen for its reliability and familiarity when working with structured relational data.
+- **Drizzle ORM**
+  - A TypeScript-friendly library that defines database schemas and relationships in code.
+  - Ensures type safety across queries, reducing runtime errors and data mismatches.
+  - Easily switches from the default PostgreSQL setup to MySQL by changing configuration and driver (`mysql2`).
+- **Docker**
+  - Runs the MySQL database in a containerized environment for consistent setup across all developers’ machines.
 
-These components work together to receive user credentials, verify or store them securely, manage sessions or tokens, and deliver protected data back to the frontend.
+Together, these backend components handle user roles, data integrity, and the core workflows of archiving documents.
 
 ## 3. Infrastructure and Deployment
-Infrastructure covers where and how we host the app, as well as how changes get delivered:
+
+These choices ensure the application is reliable, easy to update, and can grow over time:
 
 - **Git & GitHub**
-  - Version control system (Git) and remote hosting (GitHub) keep track of all code changes and allow team collaboration.
-- **Vercel (or Netlify)**
-  - A popular hosting service optimized for Next.js, with one-click deployments and global content delivery.
-  - Automatically rebuilds and deploys the site whenever code is pushed to the main branch.
-- **GitHub Actions (CI/CD)**
-  - Automates tasks like linting (ESLint), formatting (Prettier), and running any tests you add.
-  - Ensures that only clean, tested code goes live.
+  - Version control system for tracking code changes and collaborating with the team.
+  - GitHub repositories provide code hosting, pull-request workflows, and issue tracking.
+- **Continuous Integration / Continuous Deployment (CI/CD)**
+  - Automated pipelines (for example, GitHub Actions) run tests and build the app on each code change.
+  - Ensures that only tested, approved code is deployed to production.
+- **Hosting Platform**
+  - Services like Vercel (perfect for Next.js) or AWS amplify can host the frontend and API with minimal configuration.
+  - Offers automatic SSL, global content delivery, and easy rollbacks.
+- **Container Registry**
+  - Stores Docker images for the MySQL database and any additional services.
+  - Simplifies deployment in staging and production.
 
-Together, these tools provide a reliable, scalable setup where every code change is tested and deployed quickly, with minimal manual work.
+This setup lets us push updates confidently, knowing that code is tested, versioned, and deployed in a reproducible way.
 
 ## 4. Third-Party Integrations
-While this starter kit is minimal by design, it already includes or can easily add:
 
-- **bcrypt**
-  - For secure password hashing (included as an npm dependency).
-- **NextAuth.js** (optional)
-  - A full-featured authentication library supporting email/password, OAuth, and more.
-- **Sentry or LogRocket** (optional)
-  - For real-time error tracking and performance monitoring in production.
+External services that add key features without reinventing the wheel:
 
-These integrations help extend the app’s capabilities without building every feature from scratch.
+- **File Storage (e.g., AWS S3 or Local Volume)**
+  - For uploading and serving scanned documents or large media files associated with archive entries.
+  - Cloud storage like S3 offers durability and easy scaling.
+- **Charting Library (e.g., Recharts)**
+  - Renders interactive graphs in the statistics dashboard (e.g., number of archives per category).
+  - Helps users visualize trends and key metrics at a glance.
+- **Analytics (e.g., Google Analytics or Plausible)**
+  - Tracks usage patterns, popular pages, and user behavior.
+  - Supports data-driven decisions about feature improvements.
+
+Each integration is chosen to enhance core archive functionality without adding complex internal code.
 
 ## 5. Security and Performance Considerations
-We’ve baked in several measures to keep users safe and the app running smoothly:
 
-Security:
-- Passwords are never stored in plain text—bcrypt hashes them with a random salt.
-- API routes can implement CSRF protection and input validation to block malicious requests.
-- Session tokens or cookies are marked secure and HttpOnly to prevent theft via JavaScript.
+We’ve built in several measures to keep data safe and ensure a smooth user experience:
 
-Performance:
-- Server-side rendering (SSR) and static site generation (SSG) in Next.js deliver pages faster.
-- Code splitting and lazy-loaded components ensure users only download what they need.
-- Global CSS and theme files are small and cached by the browser for quick repeat visits.
+- **Role-Based Access Control (RBAC)**
+  - Both frontend components and API routes check user roles (`superadmin`, `operator`, `user`).
+  - Prevents users from seeing or performing actions they are not allowed to.
+- **Authentication & Session Protection**
+  - Better Auth uses secure cookies and session tokens to keep users logged in safely.
+  - New accounts remain in a “pending” state until approved by a superadmin.
+- **Data Validation**
+  - API endpoints validate input against expected schemas, preventing invalid or malicious data.
+  - Drizzle ORM ensures correct data types and relationships before writing to the database.
+- **Performance Optimizations**
+  - Server-side rendering and static asset caching (via Next.js) speed up page loads.
+  - Tailwind’s Just-In-Time (JIT) compiler generates only the CSS you need.
+  - Lazy loading of components and code-splitting reduce initial bundle sizes.
 
-These strategies work together to give users a fast, secure experience every time.
+These practices keep the application responsive, protect sensitive archive information, and maintain data integrity.
 
 ## 6. Conclusion and Overall Tech Stack Summary
-In building **codeguide-starter**, we chose technologies that:
 
-- Align with modern web standards (Next.js, React, TypeScript).
-- Provide a clear, file-based project structure for rapid onboarding.
-- Offer built-in support for server-side rendering, API routes, and static assets.
-- Emphasize security through password hashing, session management, and safe defaults.
-- Enable easy scaling and future enhancements via modular code and optional integrations.
+Our Local Archive Web Application combines modern, proven technologies to deliver a secure, scalable, and user-friendly system:
 
-This stack strikes a balance between simplicity for newcomers and flexibility for experienced teams. It accelerates development of a secure authentication flow and a polished dashboard, while leaving room to plug in databases, test suites, and advanced features as the project grows.
+- **Frontend**: Next.js (App Router), React, Tailwind CSS, shadcn/ui, TypeScript
+- **Backend**: Next.js API routes, Better Auth, MySQL, Drizzle ORM, Docker
+- **Infrastructure**: Git/GitHub, CI/CD (GitHub Actions), Vercel or AWS hosting, Docker containers
+- **Third-Party**: AWS S3 (or similar) for file storage, Recharts for charts, Analytics for usage insights
+- **Security & Performance**: RBAC, secure sessions, input validation, server-side rendering, CSS JIT, code-splitting
+
+These choices align with the project’s goals of robust multi-role authentication, type-safe data handling, responsive UI with Dark Mode, and reliable deployment workflows. The stack is ready to grow as your archive system adds features like advanced search, audit logging, and reporting.

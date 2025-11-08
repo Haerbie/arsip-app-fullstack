@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { signIn } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 
 export default function SignInPage() {
@@ -32,7 +33,25 @@ export default function SignInPage() {
             if (result.error) {
                 setError(result.error.message || "Sign in failed");
             } else {
-                router.push("/dashboard");
+                // Check user status after successful login
+                try {
+                    const session = await auth.api.getSession({
+                        headers: new Headers({
+                            cookie: document.cookie,
+                        }),
+                    });
+
+                    if (session?.user.status === "pending") {
+                        router.push("/pending-approval");
+                    } else if (session?.user.status === "inactive") {
+                        setError("Akun Anda tidak aktif. Silakan hubungi administrator.");
+                    } else {
+                        router.push("/dashboard");
+                    }
+                } catch (sessionError) {
+                    // If session check fails, still redirect to dashboard
+                    router.push("/dashboard");
+                }
             }
         } catch (err) {
             setError("An unexpected error occurred");
