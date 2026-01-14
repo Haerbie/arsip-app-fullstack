@@ -1,11 +1,15 @@
 import 'dotenv/config';
-import { defineConfig } from 'drizzle-kit';
+import type { Config } from 'drizzle-kit';
 
-export default defineConfig({
+export default {
     out: './drizzle',
-    schema: './db/schema/*',
-    dialect: 'postgresql',
+    schema: './db/schema/index.ts',
+    dialect: 'mysql',
     dbCredentials: {
-        url: process.env.DATABASE_URL!,
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'arsip_app',
     },
-});
+    tablesFilter: ["arsip_app_*"],
+} satisfies Config;

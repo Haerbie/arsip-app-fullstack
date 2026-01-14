@@ -1,117 +1,97 @@
-# Project Requirements Document: codeguide-starter
-
----
+# Project Requirements Document (PRD)
 
 ## 1. Project Overview
 
-The **codeguide-starter** project is a boilerplate web application that provides a ready-made foundation for any web project requiring secure user authentication and a post-login dashboard. It sets up the common building blocks—sign-up and sign-in pages, API routes to handle registration and login, and a simple dashboard interface driven by static data. By delivering this skeleton, it accelerates development time and ensures best practices are in place from day one.
+This project is a Local Archive Management Web Application designed to let organizations store, organize, and track physical or digital archive records in a secure, role-controlled environment. Instead of scattered spreadsheets or paper ledgers, users will have a centralized dashboard that shows key metrics and provides rich, form-based interfaces to manage archival units, classification codes, categories, and more.
 
-This starter kit is being built to solve the friction developers face when setting up repeated common tasks: credential handling, session management, page routing, and theming. Key objectives include: 1) delivering a fully working authentication flow (registration & login), 2) providing a gated dashboard area upon successful login, 3) establishing a clear, maintainable project structure using Next.js and TypeScript, and 4) demonstrating a clean theming approach with global and section-specific CSS. Success is measured by having an end-to-end login journey in under 200 lines of code and zero runtime type errors.
-
----
+We’re building this system to streamline how archives are created, approved, and maintained. Key objectives include supporting three user roles (superadmin, operator, user) with an explicit approval workflow, delivering real-time archive statistics, ensuring data integrity through type-safe database interactions, and offering a consistent, themeable UI with light/dark mode. Success means users can reliably perform CRUD (Create, Read, Update, Delete) operations on seven core data tables, view up-to-date metrics, and trust that only authorized actions occur.
 
 ## 2. In-Scope vs. Out-of-Scope
 
-### In-Scope (Version 1)
-- User registration (sign-up) form with validation
-- User login (sign-in) form with validation
-- Next.js API routes under `/api/auth/route.ts` handling:
-  - Credential validation
-  - Password hashing (e.g., bcrypt)
-  - Session creation or JWT issuance
-- Protected dashboard pages under `/dashboard`:
-  - `layout.tsx` wrapping dashboard content
-  - `page.tsx` rendering static data from `data.json`
-- Global application layout in `/app/layout.tsx`
-- Basic styling via `globals.css` and `dashboard/theme.css`
-- TypeScript strict mode enabled
+**In-Scope (Version 1):**
+- Email/password sign-up and sign-in with pending-state approval by superadmin
+- Three roles with role-based access control: superadmin, operator, and user
+- A protected statistics dashboard showing real-time counts from MySQL
+- Collapsible sidebar navigation to seven management sections:
+  - Arsip Unit
+  - Berkas Arsip
+  - Kategori
+  - Sub Kategori
+  - Kode Klasifikasi
+  - Unit Pengolah
+  - Manajemen Pengguna (user verification)
+- CRUD interfaces for each of the seven tables using `shadcn/ui` components and Tailwind CSS
+- Dark mode toggle with theming via CSS variables
+- API routes in Next.js with server-side role checks
+- MySQL database accessed via Drizzle ORM, running in Docker
 
-### Out-of-Scope (Later Phases)
-- Integration with a real database (PostgreSQL, MongoDB, etc.)
-- Advanced authentication flows (password reset, email verification, MFA)
-- Role-based access control (RBAC)
-- Multi-tenant or white-label theming
-- Unit, integration, or end-to-end testing suites
-- CI/CD pipeline and production deployment scripts
-
----
+**Out-of-Scope (Version 1):**
+- Advanced search and filtering beyond basic table controls
+- File upload and external storage (e.g., S3) for scanned documents
+- Audit logging or detailed change history tables
+- Data export (CSV/PDF) and custom reporting
+- Mobile-only or offline support
 
 ## 3. User Flow
 
-A new visitor lands on the root URL and sees a welcome page with options to **Sign Up** or **Sign In**. If they choose Sign Up, they fill in their email, password, and hit “Create Account.” The form submits to `/api/auth/route.ts`, which hashes the password, creates a new user session or token, and redirects them to the dashboard. If any input is invalid, an inline error message explains the issue (e.g., “Password too short”).
+A new user visits the sign-up page, completes the registration form, and is marked as “pending.” They cannot access the dashboard until a superadmin logs in, visits the “Manajemen Pengguna” section, and approves their account. Once approved, the user receives a notification and can sign in normally.
 
-Once authenticated, the user is taken to the `/dashboard` route. Here they see a sidebar or header defined by `dashboard/layout.tsx`, and the main panel pulls in static data from `data.json`. They can log out (if that control is present), but otherwise their entire session is managed by server-side cookies or tokens. Returning users go directly to Sign In, submit credentials, and upon success they land back on `/dashboard`. Any unauthorized access to `/dashboard` redirects back to Sign In.
-
----
+After signing in, the user lands on the statistics dashboard, which displays live counts of archive units, files, and categories. A collapsible left sidebar lists links to each management section. The user clicks “Berkas Arsip” to view a table of archive bundles, uses the “New” button to open a form, and fills in required fields. All form submissions call secure API routes that verify the user’s role before saving to MySQL via Drizzle.
 
 ## 4. Core Features
 
-- **Sign-Up Page (`/app/sign-up/page.tsx`)**: Form fields for email & password, client-side validation, POST to `/api/auth`.
-- **Sign-In Page (`/app/sign-in/page.tsx`)**: Form fields for email & password, client-side validation, POST to `/api/auth`.
-- **Authentication API (`/app/api/auth/route.ts`)**: Handles both registration and login based on HTTP method, integrates password hashing (bcrypt) and session or JWT logic.
-- **Global Layout (`/app/layout.tsx` + `globals.css`)**: Shared header, footer, and CSS resets across all pages.
-- **Dashboard Layout (`/app/dashboard/layout.tsx` + `dashboard/theme.css`)**: Sidebar or top nav for authenticated flows, section-specific styling.
-- **Dashboard Page (`/app/dashboard/page.tsx`)**: Reads `data.json`, renders it as cards or tables.
-- **Static Data Source (`/app/dashboard/data.json`)**: Example dataset to demo dynamic rendering.
-- **TypeScript Configuration**: `tsconfig.json` with strict mode and path aliases (if any).
-
----
+- **Multi-Role Authentication & Approval**: Better Auth library customized to handle superadmin, operator, user roles and a pending-approval workflow.
+- **Protected Statistics Dashboard**: Real-time metrics fetched from MySQL and displayed on a secure Next.js page.
+- **Sidebar Navigation**: Collapsible, role-aware links to seven management areas.
+- **CRUD Interfaces for Seven Tables**: Create, read, update, delete operations on:
+  - Arsip Unit
+  - Berkas Arsip
+  - Kategori
+  - Sub Kategori
+  - Kode Klasifikasi
+  - Unit Pengolah
+  - Manajemen Pengguna
+- **Role-Checked API Routes**: Next.js API endpoints that enforce server-side access control based on session roles.
+- **Type-Safe Database Layer**: Drizzle ORM schemas and relationships, switched to MySQL, with full TypeScript safety.
+- **Theming & Dark Mode**: Tailwind CSS + CSS variables to support light and dark themes with a UI toggle.
+- **Containerized Database**: Dockerized MySQL setup for consistent local and test environments.
 
 ## 5. Tech Stack & Tools
 
-- **Framework**: Next.js (App Router) for file-based routing, SSR/SSG, and API routes.
-- **Language**: TypeScript for type safety.
-- **UI Library**: React 18 for component-based UI.
-- **Styling**: Plain CSS via `globals.css` (global reset) and `theme.css` (sectional styling). Can easily migrate to CSS Modules or Tailwind in the future.
-- **Backend**: Node.js runtime provided by Next.js API routes.
-- **Password Hashing**: bcrypt (npm package).
-- **Session/JWT**: NextAuth.js or custom JWT logic (to be decided in implementation).
-- **IDE & Dev Tools**: VS Code with ESLint, Prettier extensions. Optionally, Cursor.ai for AI-assisted coding.
-
----
+- **Frontend**: Next.js (App Router) with React components, `shadcn/ui` library for tables and forms, Tailwind CSS for styling and theming.
+- **Backend**: Next.js API routes, Better Auth for authentication and session management.
+- **Database**: MySQL (via Docker), Drizzle ORM for schema definitions and queries.
+- **Language**: TypeScript end-to-end for type safety.
+- **Development**: Docker Compose for local services, VS Code with possible plugins like Windsurf or Cursor for AI-assisted coding.
+- **Optional AI Models**: None in Version 1 (no GPT integration required).
 
 ## 6. Non-Functional Requirements
 
-- **Performance**: Initial page load under 200 ms on a standard broadband connection. API responses under 300 ms.
-- **Security**:
-  - HTTPS only in production.
-  - Proper CORS, CSRF protection for API routes.
-  - Secure password storage (bcrypt with salt).
-  - No credentials or secrets checked into version control.
-- **Scalability**: Structure must support adding database integration, caching layers, and advanced auth flows without rewiring core app.
-- **Usability**: Forms should give real-time feedback on invalid input. Layout must be responsive (mobile > 320 px).
-- **Maintainability**: Code must adhere to TypeScript strict mode. Linting & formatting enforced by ESLint/Prettier.
-
----
+- **Performance**: Page loads under 2 seconds; simple API queries respond within 200 ms.
+- **Security**: HTTPS for all traffic; server-side role checks on every API; input validation and SQL injection protection by Drizzle.
+- **Usability**: Responsive design across desktop and tablet; accessible form labels and keyboard navigation; clear error messages.
+- **Scalability**: Support up to 10,000 archive records without performance degradation; Drizzle connection pooling.
+- **Maintainability**: Modular folder structure; consistent coding standards; TypeScript types for all database models and API payloads.
 
 ## 7. Constraints & Assumptions
 
-- **No Database**: Dashboard uses only `data.json`; real database integration is deferred.
-- **Node Version**: Requires Node.js >= 14.
-- **Next.js Version**: Built on Next.js 13+ App Router.
-- **Authentication**: Assumes availability of bcrypt or NextAuth.js at implementation time.
-- **Hosting**: Targets serverless or Node.js-capable hosting (e.g., Vercel, Netlify).
-- **Browser Support**: Modern evergreen browsers; no IE11 support required.
-
----
+- The development environment will run Docker for MySQL; no managed DB service in Version 1.
+- Drizzle ORM fully supports needed relationships on MySQL.
+- Better Auth handles custom roles and pending-approval logic without heavy rewrites.
+- Browser support for modern evergreen browsers (Chrome, Firefox, Edge, Safari).
+- No offline or mobile-first requirements beyond responsive design.
 
 ## 8. Known Issues & Potential Pitfalls
 
-- **Static Data Limitation**: `data.json` is only for demo. A real API or database will be needed to avoid stale data.
-  *Mitigation*: Define a clear interface for data fetching so swapping to a live endpoint is trivial.
-
-- **Global CSS Conflicts**: Using global styles can lead to unintended overrides.
-  *Mitigation*: Plan to migrate to CSS Modules or utility-first CSS in Phase 2.
-
-- **API Route Ambiguity**: Single `/api/auth/route.ts` handling both sign-up and sign-in could get complex.
-  *Mitigation*: Clearly branch on HTTP method (`POST /register` vs. `POST /login`) or split into separate files.
-
-- **Lack of Testing**: No test suite means regressions can slip in.
-  *Mitigation*: Build a minimal Jest + React Testing Library setup in an early iteration.
-
-- **Error Handling Gaps**: Client and server must handle edge cases (network failures, malformed input).
-  *Mitigation*: Define a standard error response schema and show user-friendly messages.
+- **MySQL Migration**: Moving from the starter’s default PostgreSQL to MySQL requires updating Drizzle configuration and ensuring feature parity.
+  - *Mitigation*: Write simple migration scripts and test schema with seed data.
+- **Role Misconfiguration**: Inconsistent role checks between UI and API could expose endpoints.
+  - *Mitigation*: Centralize role logic in middleware and reuse it in all routes.
+- **Complex Relationships**: Defining many-to-many or one-to-many associations (e.g., Kode Klasifikasi ↔ Arsip Unit) may introduce query complexity.
+  - *Mitigation*: Start with clear Drizzle schema definitions and write unit tests for each relationship.
+- **Dark Mode Theming**: Custom CSS variable naming may clash if not planned carefully.
+  - *Mitigation*: Define a consistent design token system (`--color-bg`, `--color-text`) before building components.
 
 ---
 
-This PRD should serve as the single source of truth for the AI model or any developer generating the next set of technical documents: Tech Stack Doc, Frontend Guidelines, Backend Structure, App Flow, File Structure, and IDE Rules. It contains all functional and non-functional requirements with no ambiguity, enabling seamless downstream development.
+This PRD is intended as the single source of truth for all upcoming technical documents: Tech Stack overview, Frontend Guidelines, Backend Architecture, API specifications, and File Structure Plans. All details needed to remove ambiguity have been specified above.
